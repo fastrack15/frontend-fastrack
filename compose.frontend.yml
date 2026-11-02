@@ -1,0 +1,17 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: https://api.e-pengantarkerja.web.id
+
+    container_name: fastrack-frontend
+    restart: unless-stopped
+
+    networks:
+      - n8n_default
+
+networks:
+  n8n_default:
+    external: true
