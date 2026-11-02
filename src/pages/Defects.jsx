@@ -663,48 +663,48 @@ function Defects() {
             </div>
           )}
 
-          {/* Filter kegiatan */}
+          {/* Filter ruas: tampil setelah kegiatan dipilih */}
           <div>
-            <label htmlFor="filterActivity" className={labelClass}>
-              Kegiatan
+            <label htmlFor="filterRuas" className={labelClass}>
+              Ruas
             </label>
 
             <select
-              id="filterActivity"
+              id="filterRuas"
               className={input}
-              value={selectedActivity}
-              onChange={(event) => handleActivityChange(event.target.value)}
+              value={selectedRuas}
+              onChange={(event) => handleRuasChange(event.target.value)}
               disabled={loading || !!error}
             >
-              <option value="">Semua kegiatan</option>
+              <option value="">Semua ruas</option>
 
-              {activities.map((activity) => (
-                <option key={activity} value={activity}>
-                  {activity}
+              {ruasOptions.map((ruas) => (
+                <option key={ruas} value={ruas}>
+                  {ruas}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Filter ruas: tampil setelah kegiatan dipilih */}
-          {selectedActivity && (
+          {/* Filter kegiatan */}
+          {selectedRuas && (
             <div>
-              <label htmlFor="filterRuas" className={labelClass}>
-                Ruas
+              <label htmlFor="filterActivity" className={labelClass}>
+                Kegiatan
               </label>
 
               <select
-                id="filterRuas"
+                id="filterActivity"
                 className={input}
-                value={selectedRuas}
-                onChange={(event) => handleRuasChange(event.target.value)}
+                value={selectedActivity}
+                onChange={(event) => handleActivityChange(event.target.value)}
                 disabled={loading || !!error}
               >
-                <option value="">Semua ruas</option>
+                <option value="">Semua kegiatan</option>
 
-                {ruasOptions.map((ruas) => (
-                  <option key={ruas} value={ruas}>
-                    {ruas}
+                {activities.map((activity) => (
+                  <option key={activity} value={activity}>
+                    {activity}
                   </option>
                 ))}
               </select>
