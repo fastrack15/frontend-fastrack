@@ -182,8 +182,9 @@ function Defects() {
     () => typeof window === "undefined" || window.innerWidth >= 768,
   );
 
-  const [selectedActivity, setSelectedActivity] = useState("");
+  // Urutan filter: Ruas -> Kegiatan -> Lokasi
   const [selectedRuas, setSelectedRuas] = useState("");
+  const [selectedActivity, setSelectedActivity] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
 
   const [selectedDefect, setSelectedDefect] = useState(null);
@@ -287,84 +288,84 @@ function Defects() {
     [rows],
   );
 
-  // Tahap 1: daftar kegiatan unik.
-  const activities = useMemo(() => {
+  // Tahap 1: daftar ruas unik (dari semua data).
+  const ruasOptions = useMemo(() => {
     return [
       ...new Set(
         normalizedRows
-          .map((row) => String(row.kegiatan ?? "").trim())
+          .map((row) => String(row.ruas ?? "").trim())
           .filter(Boolean),
       ),
     ].sort((a, b) => a.localeCompare(b, "id"));
   }, [normalizedRows]);
 
-  // Data yang cocok dengan kegiatan terpilih.
-  const activityRows = useMemo(() => {
-    if (!selectedActivity) return normalizedRows;
+  // Data yang cocok dengan ruas terpilih.
+  const ruasRows = useMemo(() => {
+    if (!selectedRuas) return normalizedRows;
 
     return normalizedRows.filter(
-      (row) => String(row.kegiatan ?? "").trim() === selectedActivity,
-    );
-  }, [normalizedRows, selectedActivity]);
-
-  // Tahap 2: daftar ruas yang terkait dengan kegiatan.
-  const ruasOptions = useMemo(() => {
-    return [
-      ...new Set(
-        activityRows
-          .map((row) => String(row.ruas ?? "").trim())
-          .filter(Boolean),
-      ),
-    ].sort((a, b) => a.localeCompare(b, "id"));
-  }, [activityRows]);
-
-  // Data yang cocok dengan kegiatan dan ruas terpilih.
-  const ruasRows = useMemo(() => {
-    if (!selectedRuas) return activityRows;
-
-    return activityRows.filter(
       (row) => String(row.ruas ?? "").trim() === selectedRuas,
     );
-  }, [activityRows, selectedRuas]);
+  }, [normalizedRows, selectedRuas]);
 
-  // Tahap 3: daftar lokasi untuk kegiatan dan ruas terpilih.
-  const locationOptions = useMemo(() => {
-    if (!selectedActivity || !selectedRuas) return [];
-
+  // Tahap 2: daftar kegiatan yang ada pada ruas terpilih.
+  const activities = useMemo(() => {
     return [
       ...new Set(
         ruasRows
+          .map((row) => String(row.kegiatan ?? "").trim())
+          .filter(Boolean),
+      ),
+    ].sort((a, b) => a.localeCompare(b, "id"));
+  }, [ruasRows]);
+
+  // Data yang cocok dengan ruas dan kegiatan terpilih.
+  const activityRows = useMemo(() => {
+    if (!selectedActivity) return ruasRows;
+
+    return ruasRows.filter(
+      (row) => String(row.kegiatan ?? "").trim() === selectedActivity,
+    );
+  }, [ruasRows, selectedActivity]);
+
+  // Tahap 3: daftar lokasi untuk ruas dan kegiatan terpilih.
+  const locationOptions = useMemo(() => {
+    if (!selectedRuas || !selectedActivity) return [];
+
+    return [
+      ...new Set(
+        activityRows
           .map((row) => row.sta)
           .filter((location) => location && location !== "-"),
       ),
     ].sort((a, b) => a.localeCompare(b, "id"));
-  }, [ruasRows, selectedActivity, selectedRuas]);
+  }, [activityRows, selectedRuas, selectedActivity]);
 
   // Data yang akan ditampilkan pada peta.
   // Jika lokasi dipilih, peta hanya menampilkan titik lokasi tersebut.
   const displayedRows = useMemo(() => {
-    if (!selectedLocation) return ruasRows;
+    if (!selectedLocation) return activityRows;
 
-    return ruasRows.filter((row) => row.sta === selectedLocation);
-  }, [ruasRows, selectedLocation]);
+    return activityRows.filter((row) => row.sta === selectedLocation);
+  }, [activityRows, selectedLocation]);
 
-  // Reset ruas dan lokasi ketika kegiatan berubah.
-  const handleActivityChange = (value) => {
-    setSelectedActivity(value);
-    setSelectedRuas("");
+  // Reset kegiatan dan lokasi ketika ruas berubah.
+  const handleRuasChange = (value) => {
+    setSelectedRuas(value);
+    setSelectedActivity("");
     setSelectedLocation("");
   };
 
-  // Reset lokasi ketika ruas berubah.
-  const handleRuasChange = (value) => {
-    setSelectedRuas(value);
+  // Reset lokasi ketika kegiatan berubah (ruas tetap).
+  const handleActivityChange = (value) => {
+    setSelectedActivity(value);
     setSelectedLocation("");
   };
 
   // Hapus seluruh filter.
   const resetFilters = () => {
-    setSelectedActivity("");
     setSelectedRuas("");
+    setSelectedActivity("");
     setSelectedLocation("");
   };
 
@@ -538,7 +539,7 @@ function Defects() {
     // berubah (atau saat data pertama kali tersedia), bukan setiap data di-refresh,
     // supaya posisi dan zoom peta yang sedang dipakai user tidak berpindah sendiri.
     const locations = Array.from(groupedLocations.values());
-    const fitKey = `${selectedActivity}|${selectedRuas}|${selectedLocation}`;
+    const fitKey = `${selectedRuas}|${selectedActivity}|${selectedLocation}`;
 
     if (locations.length === 0) {
       lastFitKeyRef.current = null;
@@ -574,8 +575,8 @@ function Defects() {
     displayedRows,
     mapReady,
     renderMarkers,
-    selectedActivity,
     selectedRuas,
+    selectedActivity,
     selectedLocation,
   ]);
 
@@ -663,7 +664,7 @@ function Defects() {
             </div>
           )}
 
-          {/* Filter ruas: tampil setelah kegiatan dipilih */}
+          {/* Filter ruas: tampil awal */}
           <div>
             <label htmlFor="filterRuas" className={labelClass}>
               Ruas
@@ -686,7 +687,7 @@ function Defects() {
             </select>
           </div>
 
-          {/* Filter kegiatan */}
+          {/* Filter kegiatan: tampil setelah ruas dipilih */}
           {selectedRuas && (
             <div>
               <label htmlFor="filterActivity" className={labelClass}>
@@ -711,8 +712,8 @@ function Defects() {
             </div>
           )}
 
-          {/* Daftar lokasi muncul setelah kegiatan dan ruas dipilih */}
-          {selectedActivity && selectedRuas && (
+          {/* Daftar lokasi muncul setelah ruas dan kegiatan dipilih */}
+          {selectedRuas && selectedActivity && (
             <div>
               <p className={labelClass}>Lokasi ({locationOptions.length})</p>
 
