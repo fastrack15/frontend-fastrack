@@ -308,7 +308,7 @@ function FilterSelect({ id, label, value, onChange, children }) {
     <select
       id={id}
       aria-label={label}
-      className={`${input} min-w-0 @min-[1420px]:w-40 @min-[1420px]:min-w-36 @min-[1420px]:px-3 @min-[1420px]:text-[13px]`}
+      className={`${input} min-w-0 @min-[1100px]:w-auto @min-[1100px]:max-w-40 @min-[1100px]:flex-1 @min-[1100px]:px-2.5 @min-[1100px]:text-[13px]`}
       value={value}
       onChange={(e) => onChange(e.target.value)}
     >
@@ -854,9 +854,9 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
         {/* Kartu cukup lebar (>= 1420px): satu baris (pencarian, dropdown, tombol).
             Lebih sempit: pencarian + tombol di atas, dropdown di bawahnya.
             Memakai container query, jadi ikut berubah saat sidebar diciutkan. */}
-        <div className="flex flex-wrap items-center gap-3 @min-[1420px]:flex-nowrap">
+        <div className="flex flex-wrap items-center gap-3 @min-[1100px]:flex-nowrap @min-[1100px]:gap-2">
           {/* Pencarian */}
-          <div className="relative order-1 min-w-[200px] flex-1">
+          <div className="relative order-1 min-w-50 flex-1 @min-[1100px]:w-48 @min-[1100px]:min-w-37.5 @min-[1100px]:flex-none">
             <i
               className="fa-solid fa-magnifying-glass pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-sm text-gray-400"
               aria-hidden="true"
@@ -876,7 +876,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
           </div>
 
           {/* Filter dropdown */}
-          <div className="order-3 grid w-full grid-cols-2 gap-3 @xl:grid-cols-3 @4xl:grid-cols-6 @min-[1420px]:order-2 @min-[1420px]:flex @min-[1420px]:w-auto @min-[1420px]:min-w-0">
+          <div className="order-3 grid w-full grid-cols-2 gap-3 @xl:grid-cols-3 @4xl:grid-cols-6 @min-[1100px]:order-2 @min-[1100px]:flex @min-[1100px]:w-auto @min-[1100px]:min-w-0 @min-[1100px]:flex-1 @min-[1100px]:gap-2">
             <FilterSelect
               id="filterRuas"
               label="Filter ruas"
@@ -960,7 +960,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
           </div>
 
           {/* Tombol */}
-          <div className="order-2 flex flex-wrap items-center gap-2 @min-[1420px]:order-3 @min-[1420px]:flex-nowrap">
+          <div className="order-2 flex flex-wrap items-center gap-2 @min-[1100px]:order-3 @min-[1100px]:shrink-0 @min-[1100px]:flex-nowrap">
             {/* Filter Tanggal */}
             <DatePicker
               selectsRange
