@@ -32,6 +32,16 @@ import {
 
 const RECORDS_PER_PAGE = 10;
 
+// Kunci temuan sama dengan pengelompokan grafik "Jenis Defect": spasi dirapikan,
+// huruf kecil, dan kosong atau "-" dianggap "tidak diketahui".
+const temuanKey = (value) => {
+  const raw = String(value ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return raw === "" || raw === "-" ? "tidak diketahui" : raw.toLowerCase();
+};
+
 // Modal Detail membawa pustaka peta (maplibre-gl, ±1 MB) dan ExcelJS (±1 MB)
 // hanya dipakai saat Export. Keduanya dimuat saat dibutuhkan, atau lebih awal
 // ketika kursor/fokus mendekati tombolnya, supaya klik pertama terasa cepat.
@@ -308,6 +318,7 @@ function FilterSelect({ id, label, value, onChange, children }) {
     <select
       id={id}
       aria-label={label}
+      title={label}
       className={`${input} min-w-0 @min-[1100px]:w-auto @min-[1100px]:max-w-40 @min-[1100px]:flex-1 @min-[1100px]:px-2.5 @min-[1100px]:text-[13px]`}
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -326,6 +337,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
   const [filterLingkup, setFilterLingkup] = useState("");
   const [filterJalur, setFilterJalur] = useState("");
   const [filterLajur, setFilterLajur] = useState("");
+  const [filterTemuan, setFilterTemuan] = useState("");
   const [filterSchedule, setFilterSchedule] = useState("");
   const [dateRange, setDateRange] = useState([null, null]);
   const [startDate, endDate] = dateRange;
@@ -385,6 +397,9 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
       lingkup: uniqueValues("lingkup"),
       jalur: uniqueValues("jalur"),
       lajur: uniqueValues("lajur"),
+      temuan: [
+        ...new Set(searchedRows.map((row) => temuanKey(row.temuan))),
+      ].sort((a, b) => a.localeCompare(b, "id")),
     };
   }, [searchedRows]);
 
@@ -422,6 +437,9 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
       const matchLajur =
         !filterLajur || String(row.lajur ?? "").trim() === filterLajur;
 
+      const matchTemuan =
+        !filterTemuan || temuanKey(row.temuan) === filterTemuan;
+
       // Mengambil tanggal langsung dari rows.created_at
       const rowDate = row.created_at ? String(row.created_at).slice(0, 10) : "";
 
@@ -452,6 +470,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
         matchJalur &&
         matchTanggal &&
         matchLajur &&
+        matchTemuan &&
         matchSchedule
       );
     });
@@ -462,6 +481,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
     filterLingkup,
     filterJalur,
     filterLajur,
+    filterTemuan,
     filterSchedule,
     startDate,
     endDate,
@@ -769,6 +789,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
     filterLingkup,
     filterJalur,
     filterLajur,
+    filterTemuan,
     filterSchedule,
     startDate,
     endDate,
@@ -794,6 +815,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
     setFilterLingkup("");
     setFilterJalur("");
     setFilterLajur("");
+    setFilterTemuan("");
     setFilterSchedule("");
     setCurrentPage(1);
     setDateRange([null, null]);
@@ -876,14 +898,14 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
           </div>
 
           {/* Filter dropdown */}
-          <div className="order-3 grid w-full grid-cols-2 gap-3 @xl:grid-cols-3 @4xl:grid-cols-6 @min-[1100px]:order-2 @min-[1100px]:flex @min-[1100px]:w-auto @min-[1100px]:min-w-0 @min-[1100px]:flex-1 @min-[1100px]:gap-2">
+          <div className="order-3 grid w-full grid-cols-2 gap-3 @xl:grid-cols-3 @4xl:grid-cols-4 @6xl:grid-cols-7 @min-[1100px]:order-2 @min-[1100px]:flex @min-[1100px]:w-auto @min-[1100px]:min-w-0 @min-[1100px]:flex-1 @min-[1100px]:gap-2">
             <FilterSelect
               id="filterRuas"
               label="Filter ruas"
               value={filterRuas}
               onChange={withClearSelection(setFilterRuas)}
             >
-              <option value="">Semua Ruas</option>
+              <option value="">Ruas</option>
               {filterOptions.ruas.map((item) => (
                 <option key={item} value={item}>
                   {item}
@@ -897,7 +919,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
               value={filterKegiatan}
               onChange={withClearSelection(setFilterKegiatan)}
             >
-              <option value="">Semua Kegiatan</option>
+              <option value="">Kegiatan</option>
               {filterOptions.kegiatan.map((item) => (
                 <option key={item} value={item}>
                   {item}
@@ -911,7 +933,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
               value={filterLingkup}
               onChange={withClearSelection(setFilterLingkup)}
             >
-              <option value="">Semua Lingkup</option>
+              <option value="">Lingkup</option>
               {filterOptions.lingkup.map((item) => (
                 <option key={item} value={item}>
                   {item}
@@ -925,7 +947,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
               value={filterJalur}
               onChange={withClearSelection(setFilterJalur)}
             >
-              <option value="">Semua Jalur</option>
+              <option value="">Jalur</option>
               {filterOptions.jalur.map((item) => (
                 <option key={item} value={item}>
                   {item}
@@ -939,10 +961,24 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
               value={filterLajur}
               onChange={withClearSelection(setFilterLajur)}
             >
-              <option value="">Semua Lajur</option>
+              <option value="">Lajur</option>
               {filterOptions.lajur.map((item) => (
                 <option key={item} value={item}>
                   {item}
+                </option>
+              ))}
+            </FilterSelect>
+
+            <FilterSelect
+              id="filterTemuan"
+              label="Filter temuan"
+              value={filterTemuan}
+              onChange={withClearSelection(setFilterTemuan)}
+            >
+              <option value="">Temuan</option>
+              {filterOptions.temuan.map((item) => (
+                <option key={item} value={item}>
+                  {capitaliseFirstLetter(item)}
                 </option>
               ))}
             </FilterSelect>
@@ -953,7 +989,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
               value={filterSchedule}
               onChange={withClearSelection(setFilterSchedule)}
             >
-              <option value="">Semua Schedule</option>
+              <option value="">Schedule</option>
               <option value="onschedule">On Schedule</option>
               <option value="behindschedule">Behind Schedule</option>
             </FilterSelect>
