@@ -9,6 +9,7 @@ import {
   label as labelClass,
   textarea as textareaClass,
 } from "../ui/styles";
+import api from "../../api";
 
 // Tombol Hapus: merah, dengan garis tepi, agar tidak tertukar dengan Simpan.
 const deleteButtonClass =
@@ -75,8 +76,8 @@ export default function EditDataModal({ defect, onClose, onSaved, onDelete }) {
         throw new Error("ID data defect tidak ditemukan.");
       }
 
-      const response = await axios.put(
-        `${API_BASE_URL}/defects/${encodeURIComponent(dataId)}/target`,
+      const response = await api.put(
+        `/defects/${encodeURIComponent(dataId)}/target`,
         {
           target,
           keterangan,
