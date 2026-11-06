@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { badgeGray } from "../ui/styles";
+import ZoomableImage from "../ui/ZoomableImage";
 
 function PhotoFrame({ title, name, date, url }) {
   const hasUrl = typeof url === "string" && url.trim() !== "";
@@ -18,11 +19,10 @@ function PhotoFrame({ title, name, date, url }) {
 
       <div className="flex h-56 items-center justify-center bg-gray-50">
         {hasUrl && !failed ? (
-          <img
+          <ZoomableImage
             src={url}
-            alt={title}
-            loading="lazy"
-            className="h-full w-full object-contain"
+            title={title}
+            caption={[name, date].filter(Boolean).join(" · ")}
             onError={() => setFailedUrl(url)}
           />
         ) : (
