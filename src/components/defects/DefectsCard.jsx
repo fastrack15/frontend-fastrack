@@ -79,7 +79,7 @@ const COLUMNS = [
   { label: "Jalur", key: "jalur", width: "6%" },
   { label: "Lajur", key: "lajur", width: "7%" },
   { label: "Lingkup", key: "lingkup", width: "7%" },
-  { label: "Bangunan", key: "jenis_bangunan", width: "8%" },
+  { label: "Objek", key: "jenis_bangunan", width: "8%" },
   { label: "Temuan", key: "temuan", width: "9%" },
   { label: "Rekomendasi", key: "rekomendasi", width: "9%" },
   { label: "Tanggal", key: "created_at", width: "8%" },
