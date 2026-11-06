@@ -86,7 +86,7 @@ function Dashboard() {
           icon="triangle-exclamation"
         />
         <StatCard
-          title="Belum Diperbaiki"
+          title="Open"
           value={stats.total_open}
           percentage={stats.percentageOpen}
           loading={false}
@@ -94,7 +94,7 @@ function Dashboard() {
           icon="circle-xmark"
         />
         <StatCard
-          title="Sedang Diperbaiki"
+          title="On Process"
           value={stats.total_onProcess}
           percentage={stats.percentageOnProcess}
           loading={false}
@@ -102,7 +102,7 @@ function Dashboard() {
           icon="hourglass-half"
         />
         <StatCard
-          title="Sudah Diperbaiki"
+          title="Close"
           value={stats.total_close}
           percentage={stats.percentageClose}
           loading={false}
