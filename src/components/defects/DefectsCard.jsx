@@ -14,6 +14,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { formatDate } from "../../utils/formatDate";
 import EditDataModal from "./EditDataModal";
 import BulkEditModal from "./BulkEditModal";
+import DeleteDefectModal from "./DeleteDefectModal";
+import Swal from "sweetalert2";
 import Modal from "../ui/Modal";
 import {
   alertError,
@@ -73,18 +75,18 @@ const DateIconButton = forwardRef(function DateIconButton(
 const CHECKBOX_COLUMN_WIDTH = "3%";
 const COLUMNS = [
   { label: "No.", key: null, sortable: false, width: "3%" },
-  { label: "Ruas", key: "ruas", width: "9%" },
-  { label: "Kegiatan", key: "kegiatan", width: "9%" },
-  { label: "Lokasi", key: "sta", width: "8%" },
+  { label: "Ruas", key: "ruas", width: "8%" },
+  { label: "Kegiatan", key: "kegiatan", width: "8%" },
+  { label: "Lokasi", key: "sta", width: "7%" },
   { label: "Jalur", key: "jalur", width: "6%" },
   { label: "Lajur", key: "lajur", width: "7%" },
   { label: "Lingkup", key: "lingkup", width: "7%" },
   { label: "Objek", key: "jenis_bangunan", width: "8%" },
-  { label: "Temuan", key: "temuan", width: "9%" },
-  { label: "Rekomendasi", key: "rekomendasi", width: "9%" },
-  { label: "Tanggal", key: "created_at", width: "8%" },
+  { label: "Temuan", key: "temuan", width: "8%" },
+  { label: "Rekomendasi", key: "rekomendasi", width: "8%" },
+  { label: "Tanggal", key: "created_at", width: "7%" },
   { label: "Status", key: "status", width: "8%" },
-  { label: "Action", key: null, sortable: false, width: "6%" },
+  { label: "Action", key: null, sortable: false, width: "12%" },
 ];
 
 const locationSetting = (location) => {
@@ -151,12 +153,15 @@ function getPageItems(current, total) {
   return items;
 }
 
+const iconButtonDanger =
+  "inline-flex size-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-error-50 hover:text-error-600 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-error-500/25";
+
 const iconButton =
   "inline-flex size-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-500/25";
 
-function RowActions({ row, onSelect, onSelectTarget }) {
+function RowActions({ row, onSelect, onSelectTarget, onDelete }) {
   return (
-    <div className="flex items-center justify-center gap-1">
+    <div className="flex items-center justify-center gap-0.5">
       <button
         className={iconButton}
         type="button"
@@ -177,6 +182,15 @@ function RowActions({ row, onSelect, onSelectTarget }) {
       >
         <i className="fa-solid fa-pen-to-square" aria-hidden="true"></i>
       </button>
+      <button
+        className={iconButtonDanger}
+        type="button"
+        title="Hapus"
+        aria-label={`Hapus data ${row.data_id}`}
+        onClick={() => onDelete(row)}
+      >
+        <i className="fa-solid fa-trash-can" aria-hidden="true"></i>
+      </button>
     </div>
   );
 }
@@ -188,6 +202,7 @@ const DefectRow = memo(function DefectRow({
   onSelect,
   selectedIds,
   onSelectTarget,
+  onDelete,
   onToggleSelect,
 }) {
   return (
@@ -240,6 +255,7 @@ const DefectRow = memo(function DefectRow({
           row={row}
           onSelect={onSelect}
           onSelectTarget={onSelectTarget}
+          onDelete={onDelete}
         />
       </td>
     </tr>
@@ -262,6 +278,7 @@ const DefectCardItem = memo(function DefectCardItem({
   onSelect,
   selectedIds,
   onSelectTarget,
+  onDelete,
   onToggleSelect,
 }) {
   return (
@@ -283,6 +300,7 @@ const DefectCardItem = memo(function DefectCardItem({
             row={row}
             onSelect={onSelect}
             onSelectTarget={onSelectTarget}
+            onDelete={onDelete}
           />
         </div>
       </div>
@@ -329,7 +347,7 @@ function FilterSelect({ id, label, value, onChange, children }) {
 }
 
 function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
-  const { rows, loading, error, updateRow } = useDefects();
+  const { rows: fetchedRows, loading, error, updateRow } = useDefects();
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
   const [filterRuas, setFilterRuas] = useState("");
@@ -348,6 +366,17 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
   const [exporting, setExporting] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
   const [showBulkEdit, setShowBulkEdit] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  // Data yang sudah dihapus langsung disembunyikan tanpa menunggu polling
+  // berikutnya, dan tidak muncul lagi bila ada polling yang sudah berjalan
+  // sebelum penghapusan selesai.
+  const [deletedIds, setDeletedIds] = useState([]);
+  const rows = useMemo(
+    () =>
+      fetchedRows.filter((row) => !deletedIds.includes(String(row.data_id))),
+    [fetchedRows, deletedIds],
+  );
 
   // Pilihan data dikosongkan setiap kali filter berubah, supaya Edit Bulk
   // tidak mengenai data yang sudah tidak terlihat di tabel.
@@ -859,9 +888,27 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
     );
   };
 
+  const handleDeleted = (defect) => {
+    const id = String(defect.data_id);
+
+    setDeletedIds((previous) =>
+      previous.includes(id) ? previous : [...previous, id],
+    );
+    setSelectedIds((previous) => previous.filter((item) => item !== id));
+    setDeleteTarget(null);
+
+    Swal.fire({
+      icon: "success",
+      title: "Berhasil!",
+      text: "Data berhasil dihapus.",
+      confirmButtonText: "OK",
+    });
+  };
+
   const rowProps = {
     onSelect: setSelected,
     onSelectTarget: setSelectedTarget,
+    onDelete: setDeleteTarget,
     selectedIds,
     onToggleSelect: toggleSelect,
   };
@@ -1354,6 +1401,14 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
             }}
           />
         </Suspense>
+      )}
+      {deleteTarget && (
+        <DeleteDefectModal
+          defect={deleteTarget}
+          lokasi={locationSetting(deleteTarget.sta)}
+          onClose={() => setDeleteTarget(null)}
+          onDeleted={handleDeleted}
+        />
       )}
       <EditDataModal
         defect={selectedTarget}
