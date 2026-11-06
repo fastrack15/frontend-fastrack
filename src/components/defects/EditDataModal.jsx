@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
-import Modal, { ModalBody, ModalFooter, ModalHeader } from "../ui/Modal";
+import Modal, { ModalBody, ModalHeader } from "../ui/Modal";
 import {
   btnOutline,
   btnPrimary,
@@ -10,7 +10,9 @@ import {
   textarea as textareaClass,
 } from "../ui/styles";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+// Tombol Hapus: merah, dengan garis tepi, agar tidak tertukar dengan Simpan.
+const deleteButtonClass =
+  "inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-error-200 bg-white px-4 text-sm font-medium text-error-600 transition-colors hover:bg-error-50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-error-500/25 disabled:cursor-not-allowed disabled:opacity-50";
 
 // Nilai "-" hanya penanda tampilan dari toDefectRow, bukan data asli.
 // Jangan sampai ikut tersimpan ke database.
@@ -27,7 +29,7 @@ function FormField({ id, label, span = "sm:col-span-3", children }) {
   );
 }
 
-export default function EditDataModal({ defect, onClose, onSaved }) {
+export default function EditDataModal({ defect, onClose, onSaved, onDelete }) {
   const [target, setTarget] = useState("");
   const [keterangan, setKeterangan] = useState("");
   const [lingkup, setLingkup] = useState("");
@@ -74,7 +76,7 @@ export default function EditDataModal({ defect, onClose, onSaved }) {
       }
 
       const response = await axios.put(
-        `${API_BASE_URL}/api/defects/${encodeURIComponent(dataId)}/target`,
+        `${API_BASE_URL}/defects/${encodeURIComponent(dataId)}/target`,
         {
           target,
           keterangan,
@@ -287,19 +289,36 @@ export default function EditDataModal({ defect, onClose, onSaved }) {
           </div>
         </ModalBody>
 
-        <ModalFooter>
-          <button
-            type="button"
-            className={btnOutline}
-            onClick={onClose}
-            disabled={saving}
-          >
-            Batal
-          </button>
-          <button type="submit" className={btnPrimary} disabled={saving}>
-            {saving ? "Menyimpan..." : "Simpan"}
-          </button>
-        </ModalFooter>
+        <div className="flex flex-col-reverse gap-2 border-t border-gray-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          {/* Hapus di kiri, jauh dari Simpan. Konfirmasi ditangani induk. */}
+          {onDelete ? (
+            <button
+              type="button"
+              className={deleteButtonClass}
+              onClick={() => onDelete(defect)}
+              disabled={saving}
+            >
+              <i className="fa-solid fa-trash-can" aria-hidden="true" />
+              Hapus
+            </button>
+          ) : (
+            <span />
+          )}
+
+          <div className="flex flex-col-reverse gap-2 sm:flex-row">
+            <button
+              type="button"
+              className={btnOutline}
+              onClick={onClose}
+              disabled={saving}
+            >
+              Batal
+            </button>
+            <button type="submit" className={btnPrimary} disabled={saving}>
+              {saving ? "Menyimpan..." : "Simpan"}
+            </button>
+          </div>
+        </div>
       </form>
     </Modal>
   );
