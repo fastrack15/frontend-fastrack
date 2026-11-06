@@ -34,6 +34,14 @@ import {
 
 const RECORDS_PER_PAGE = 10;
 
+// Koordinat dianggap ada bila latitude DAN longitude sama-sama terisi di
+// database. Hanya memeriksa keterisian, bukan rentang nilainya.
+const hasValue = (value) =>
+  value !== null && value !== undefined && String(value).trim() !== "";
+
+const hasCoordinates = (row) =>
+  hasValue(row.latitude) && hasValue(row.longitude);
+
 // Kunci temuan sama dengan pengelompokan grafik "Jenis Defect": spasi dirapikan,
 // huruf kecil, dan kosong atau "-" dianggap "tidak diketahui".
 const temuanKey = (value) => {
@@ -340,6 +348,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
   const [filterJalur, setFilterJalur] = useState("");
   const [filterLajur, setFilterLajur] = useState("");
   const [filterTemuan, setFilterTemuan] = useState("");
+  const [filterKoordinat, setFilterKoordinat] = useState("");
   const [filterSchedule, setFilterSchedule] = useState("");
   const [dateRange, setDateRange] = useState([null, null]);
   const [startDate, endDate] = dateRange;
@@ -452,6 +461,12 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
       const matchTemuan =
         !filterTemuan || temuanKey(row.temuan) === filterTemuan;
 
+      const matchKoordinat =
+        !filterKoordinat ||
+        (filterKoordinat === "ada"
+          ? hasCoordinates(row)
+          : !hasCoordinates(row));
+
       // Mengambil tanggal langsung dari rows.created_at
       const rowDate = row.created_at ? String(row.created_at).slice(0, 10) : "";
 
@@ -483,6 +498,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
         matchTanggal &&
         matchLajur &&
         matchTemuan &&
+        matchKoordinat &&
         matchSchedule
       );
     });
@@ -494,6 +510,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
     filterJalur,
     filterLajur,
     filterTemuan,
+    filterKoordinat,
     filterSchedule,
     startDate,
     endDate,
@@ -1017,6 +1034,19 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
                   {capitaliseFirstLetter(item)}
                 </option>
               ))}
+            </FilterSelect>
+
+            <FilterSelect
+              id="filterKoordinat"
+              label="Filter koordinat"
+              // Label "Semua Koordinat" lebih panjang dari dropdown lain.
+              className="@min-[1100px]:min-w-38"
+              value={filterKoordinat}
+              onChange={withClearSelection(setFilterKoordinat)}
+            >
+              <option value="">Koordinat</option>
+              <option value="ada">Ada</option>
+              <option value="tidak-ada">Tidak Ada</option>
             </FilterSelect>
 
             <FilterSelect
