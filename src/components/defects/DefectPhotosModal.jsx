@@ -26,18 +26,21 @@ function DefectPhotosModal({ defect, onClose }) {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <PhotoFrame
             title="Foto Defect"
+            name={defect.nama_defect}
             date={formatDate(defect.created_defect)}
             url={getPhotoUrl(defect.path_defect)}
           />
 
           <PhotoFrame
             title="Foto Progress"
+            name={defect.nama_defect}
             date={formatDate(defect.created_progress)}
             url={getPhotoUrl(defect.path_progress)}
           />
 
           <PhotoFrame
             title="Foto Perbaikan"
+            name={defect.nama_defect}
             date={formatDate(defect.created_perbaikan)}
             url={getPhotoUrl(defect.path_perbaikan)}
           />

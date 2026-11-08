@@ -1,11 +1,21 @@
-import { NavLink } from "react-router-dom";
+import { useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { PAGE_TABS } from "./menuItems";
 import { btnIcon } from "../ui/styles";
+import { getStoredUser, logout } from "../../services/authServices";
 
 function Navbar({ onToggle, mobileOpen }) {
+  const navigate = useNavigate();
+  const [user] = useState(() => getStoredUser());
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <header className="sticky top-0 z-20 border-b border-gray-200 bg-white">
-      <div className="flex h-16 items-center gap-3 px-4 md:px-6">
+      <div className="flex min-h-16 flex-wrap items-center gap-3 px-4 py-2 md:px-6">
         <button
           className={btnIcon}
           type="button"
@@ -17,7 +27,6 @@ function Navbar({ onToggle, mobileOpen }) {
           <i className="fa-solid fa-bars" aria-hidden="true" />
         </button>
 
-        {/* Tombol halaman Defect List. NavLink menandai halaman aktif. */}
         <nav aria-label="Halaman Defect List" className="min-w-0">
           <div className="inline-flex rounded-lg bg-gray-100 p-0.5">
             {PAGE_TABS.map((tab) => (
@@ -41,7 +50,25 @@ function Navbar({ onToggle, mobileOpen }) {
           </div>
         </nav>
 
-        {/* Sisi kanan (nama pengguna, notifikasi) bisa ditambahkan di sini */}
+        <div className="ml-auto flex items-center gap-3">
+          {user && (
+            <div className="hidden text-right sm:block">
+              <p className="text-sm font-medium text-gray-800">
+                {user.fullname || user.username}
+              </p>
+              <p className="text-xs capitalize text-gray-500">{user.role}</p>
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-gray-200 px-3 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-500/25"
+          >
+            <i className="fa-solid fa-right-from-bracket" aria-hidden="true" />
+            <span>Logout</span>
+          </button>
+        </div>
       </div>
     </header>
   );

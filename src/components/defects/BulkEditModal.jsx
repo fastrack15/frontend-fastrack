@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import api from "../../api";
 import Swal from "sweetalert2";
 import Modal, { ModalBody, ModalFooter, ModalHeader } from "../ui/Modal";
 import {
@@ -12,8 +12,6 @@ import {
   input,
   textarea as textareaClass,
 } from "../ui/styles";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 // Nilai "-" hanya penanda tampilan dari toDefectRow, bukan data asli.
 // Jangan sampai ikut tersimpan ke database.
@@ -175,10 +173,8 @@ export default function BulkEditModal({ rows = [], onClose, onSaved }) {
         }
 
         try {
-          const response = await axios.put(
-            `${API_BASE_URL}/api/defects/${encodeURIComponent(
-              row.data_id,
-            )}/target`,
+          const response = await api.put(
+            `/defects/${encodeURIComponent(row.data_id)}/target`,
             payload,
           );
 

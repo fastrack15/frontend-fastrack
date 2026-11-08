@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import axios from "axios";
 import Modal, { ModalBody, ModalHeader } from "../ui/Modal";
 import {
   btnOutline,
