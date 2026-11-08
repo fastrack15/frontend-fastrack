@@ -375,9 +375,11 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
   const clearSelection = () =>
     setSelectedIds((previous) => (previous.length ? [] : previous));
 
-  // Membungkus setter filter: ubah nilai filter, lalu kosongkan pilihan.
+  // Membungkus setter filter: ubah nilai filter, reset halaman, lalu kosongkan
+  // pilihan untuk mencegah data yang sudah tidak terlihat di tabel ikut dipilih.
   const withClearSelection = (setter) => (value) => {
     setter(value);
+    setCurrentPage(1);
     clearSelection();
   };
 
@@ -807,35 +809,14 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
   // Hitung pagination.
   const totalRecords = sortedRows.length;
   const totalPages = Math.ceil(totalRecords / RECORDS_PER_PAGE);
-
-  // Jika hasil filter berubah, mulai kembali dari halaman pertama.
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [
-    deferredSearch,
-    filterRuas,
-    filterKegiatan,
-    filterLingkup,
-    filterJalur,
-    filterLajur,
-    filterTemuan,
-    filterSchedule,
-    startDate,
-    endDate,
-  ]);
-
-  // Menjaga halaman tetap valid ketika jumlah data berubah.
-  useEffect(() => {
-    if (currentPage > Math.max(totalPages, 1)) {
-      setCurrentPage(Math.max(totalPages, 1));
-    }
-  }, [currentPage, totalPages]);
+  const safeCurrentPage =
+    totalPages === 0 ? 1 : Math.min(currentPage, totalPages);
 
   const paginatedRows = useMemo(() => {
-    const startIndex = (currentPage - 1) * RECORDS_PER_PAGE;
+    const startIndex = (safeCurrentPage - 1) * RECORDS_PER_PAGE;
 
     return sortedRows.slice(startIndex, startIndex + RECORDS_PER_PAGE);
-  }, [sortedRows, currentPage]);
+  }, [sortedRows, safeCurrentPage]);
 
   const resetFilters = () => {
     setSearch("");
@@ -846,15 +827,16 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
     setFilterLajur("");
     setFilterTemuan("");
     setFilterSchedule("");
+    setFilterKoordinat("");
     setCurrentPage(1);
     setDateRange([null, null]);
     clearSelection();
   };
 
   const startRecord =
-    totalRecords === 0 ? 0 : (currentPage - 1) * RECORDS_PER_PAGE + 1;
+    totalRecords === 0 ? 0 : (safeCurrentPage - 1) * RECORDS_PER_PAGE + 1;
 
-  const endRecord = Math.min(currentPage * RECORDS_PER_PAGE, totalRecords);
+  const endRecord = Math.min(safeCurrentPage * RECORDS_PER_PAGE, totalRecords);
 
   const toggleSelect = (dataId) => {
     const id = String(dataId);
@@ -945,6 +927,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
+                setCurrentPage(1);
                 clearSelection();
               }}
             />
@@ -1240,9 +1223,11 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
                   {paginatedRows.length > 0 ? (
                     paginatedRows.map((row, index) => (
                       <DefectRow
-                        key={row.id ?? row.data_id ?? `${currentPage}-${index}`}
+                        key={
+                          row.id ?? row.data_id ?? `${safeCurrentPage}-${index}`
+                        }
                         row={row}
-                        index={(currentPage - 1) * RECORDS_PER_PAGE + index}
+                        index={(safeCurrentPage - 1) * RECORDS_PER_PAGE + index}
                         {...rowProps}
                       />
                     ))
@@ -1279,9 +1264,11 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
                   <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
                     {paginatedRows.map((row, index) => (
                       <DefectCardItem
-                        key={row.id ?? row.data_id ?? `${currentPage}-${index}`}
+                        key={
+                          row.id ?? row.data_id ?? `${safeCurrentPage}-${index}`
+                        }
                         row={row}
-                        index={(currentPage - 1) * RECORDS_PER_PAGE + index}
+                        index={(safeCurrentPage - 1) * RECORDS_PER_PAGE + index}
                         {...rowProps}
                       />
                     ))}
@@ -1307,7 +1294,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
                     <button
                       type="button"
                       className={`${pageButton} gap-1.5 border border-gray-300 text-gray-700 hover:bg-gray-50`}
-                      disabled={currentPage <= 1}
+                      disabled={safeCurrentPage <= 1}
                       aria-label="Halaman sebelumnya"
                       onClick={() =>
                         setCurrentPage((page) => Math.max(1, page - 1))
@@ -1322,18 +1309,18 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
                   </li>
 
                   {/* Nomor halaman */}
-                  {getPageItems(currentPage, totalPages).map((item) =>
+                  {getPageItems(safeCurrentPage, totalPages).map((item) =>
                     typeof item === "number" ? (
                       <li key={item}>
                         <button
                           type="button"
                           className={`${pageButton} ${
-                            currentPage === item
+                            safeCurrentPage === item
                               ? "bg-brand-500 text-white"
                               : "text-gray-700 hover:bg-gray-100"
                           }`}
                           aria-current={
-                            currentPage === item ? "page" : undefined
+                            safeCurrentPage === item ? "page" : undefined
                           }
                           onClick={() => setCurrentPage(item)}
                         >
@@ -1356,7 +1343,9 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
                     <button
                       type="button"
                       className={`${pageButton} gap-1.5 border border-gray-300 text-gray-700 hover:bg-gray-50`}
-                      disabled={totalPages === 0 || currentPage >= totalPages}
+                      disabled={
+                        totalPages === 0 || safeCurrentPage >= totalPages
+                      }
                       aria-label="Halaman berikutnya"
                       onClick={() =>
                         setCurrentPage((page) => Math.min(totalPages, page + 1))
