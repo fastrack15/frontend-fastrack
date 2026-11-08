@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link, matchPath, useLocation } from "react-router-dom";
+import { Link, matchPath, useLocation, useNavigate } from "react-router-dom";
 import { MENU } from "./menuItems";
 import logoMark from "../../assets/icon.png";
 import logoText from "../../assets/logo-ft.png";
+import { logout } from "../../services/authServices";
 
 function useIsActive() {
   const { pathname } = useLocation();
@@ -87,10 +88,18 @@ function SidebarGroup({ item, onNavigate }) {
 }
 
 function Sidebar({ onNavigate }) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    onNavigate?.();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <aside
       id="main-sidebar"
-      className="fixed inset-y-0 left-0 z-40 flex w-[290px] max-w-[85vw] -translate-x-full flex-col border-r border-gray-200 bg-white transition-[transform,width] duration-300 ease-in-out sb-open:translate-x-0 sb-open:shadow-theme-lg lg:translate-x-0 lg:shadow-none sb-collapsed:lg:w-[90px]"
+      className="fixed inset-y-0 left-0 z-40 flex w-72.5 max-w-[85vw] -translate-x-full flex-col border-r border-gray-200 bg-white transition-[transform,width] duration-300 ease-in-out sb-open:translate-x-0 sb-open:shadow-theme-lg lg:translate-x-0 lg:shadow-none sb-collapsed:lg:w-22.5"
     >
       <div className="flex h-16 items-center justify-between gap-2 border-b border-gray-200 px-5 sb-collapsed:lg:justify-center sb-collapsed:lg:px-0">
         <Link
@@ -129,6 +138,21 @@ function Sidebar({ onNavigate }) {
           ))}
         </ul>
       </nav>
+
+      <div className="mt-auto border-t border-gray-200 px-4 py-4 sb-collapsed:lg:px-3">
+        <button
+          type="button"
+          onClick={handleLogout}
+          title="Logout"
+          className={`${itemBase} w-full text-red-600 hover:bg-red-50 hover:text-red-700`}
+        >
+          <i
+            className="fa-solid fa-right-from-bracket w-5 shrink-0 text-center text-base"
+            aria-hidden="true"
+          />
+          <span className="sb-collapsed:lg:hidden">Logout</span>
+        </button>
+      </div>
     </aside>
   );
 }
