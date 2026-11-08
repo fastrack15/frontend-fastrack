@@ -33,14 +33,14 @@ function DefectPhotosModal({ defect, onClose }) {
 
           <PhotoFrame
             title="Foto Progress"
-            name={defect.nama_defect}
+            name={defect.nama_progress}
             date={formatDate(defect.created_progress)}
             url={getPhotoUrl(defect.path_progress)}
           />
 
           <PhotoFrame
             title="Foto Perbaikan"
-            name={defect.nama_defect}
+            name={defect.nama_perbaikan}
             date={formatDate(defect.created_perbaikan)}
             url={getPhotoUrl(defect.path_perbaikan)}
           />
