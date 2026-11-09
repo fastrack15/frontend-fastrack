@@ -257,6 +257,7 @@ const DefectRow = memo(function DefectRow({
           row={row}
           onSelect={onSelect}
           onSelectTarget={onSelectTarget}
+          canManage={canManage}
         />
       </td>
     </tr>
@@ -303,6 +304,7 @@ const DefectCardItem = memo(function DefectCardItem({
             row={row}
             onSelect={onSelect}
             onSelectTarget={onSelectTarget}
+            canManage={canManage}
           />
         </div>
       </div>
