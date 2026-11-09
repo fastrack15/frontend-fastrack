@@ -1,9 +1,15 @@
-export const isSuperadmin = (role) => role === "superadmin";
+const normalizeRole = (role) =>
+  String(role ?? "")
+    .trim()
+    .toLowerCase();
 
-export const isAdmin = (role) => role === "admin";
+export const isSuperadmin = (role) => normalizeRole(role) === "superadmin";
 
-export const isUser = (role) => role === "user";
+export const isAdmin = (role) => normalizeRole(role) === "admin";
 
-export const canManageDefect = (role) => ["superadmin", "admin"].includes(role);
+export const isUser = (role) => normalizeRole(role) === "user";
 
-export const canViewAllRuas = (role) => role === "superadmin";
+export const canManageDefect = (role) =>
+  ["superadmin", "admin"].includes(normalizeRole(role));
+
+export const canViewAllRuas = (role) => isSuperadmin(role);
