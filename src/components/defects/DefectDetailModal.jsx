@@ -16,7 +16,9 @@ const TONES = {
 
 function InfoCard({ tone, icon, title, children }) {
   return (
-    <div className={`flex items-start gap-3 rounded-xl border p-4 ${TONES[tone]}`}>
+    <div
+      className={`flex items-start gap-3 rounded-xl border p-4 ${TONES[tone]}`}
+    >
       <span className="mt-0.5 text-lg" aria-hidden="true">
         <i className={icon} />
       </span>
@@ -95,7 +97,10 @@ function DefectDetailModal({ defect, onLocationSaved, onClose }) {
                     className={btnPrimary}
                     onClick={() => setShowLocationPicker(true)}
                   >
-                    <i className="fa-solid fa-location-dot" aria-hidden="true" />
+                    <i
+                      className="fa-solid fa-location-dot"
+                      aria-hidden="true"
+                    />
                     Tambah Lokasi
                   </button>
                   <p className="mt-2 text-sm text-gray-500">
@@ -116,7 +121,11 @@ function DefectDetailModal({ defect, onLocationSaved, onClose }) {
               <InfoCard tone="info" icon="fa-solid fa-calendar" title="Target">
                 {formatDateWithDay(defect.target)}
               </InfoCard>
-              <InfoCard tone="warning" icon="fa-solid fa-clock" title="Sisa Hari">
+              <InfoCard
+                tone="warning"
+                icon="fa-solid fa-clock"
+                title="Sisa Hari"
+              >
                 {getRemainingDay(defect)}
               </InfoCard>
               <InfoCard

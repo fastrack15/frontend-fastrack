@@ -31,6 +31,8 @@ import {
   checkbox,
   input,
 } from "../ui/styles";
+import { getStoredUser } from "../../services/authServices";
+import { canManageDefect } from "../../utils/permission";
 
 const RECORDS_PER_PAGE = 10;
 
@@ -164,7 +166,7 @@ function getPageItems(current, total) {
 const iconButton =
   "inline-flex size-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-500/25";
 
-function RowActions({ row, onSelect, onSelectTarget }) {
+function RowActions({ row, onSelect, onSelectTarget, canManage }) {
   return (
     <div className="flex items-center justify-center gap-1">
       <button
@@ -178,15 +180,17 @@ function RowActions({ row, onSelect, onSelectTarget }) {
       >
         <i className="fa-solid fa-eye" aria-hidden="true"></i>
       </button>
-      <button
-        className={iconButton}
-        type="button"
-        title="Edit"
-        aria-label={`Edit data ${row.data_id}`}
-        onClick={() => onSelectTarget(row)}
-      >
-        <i className="fa-solid fa-pen-to-square" aria-hidden="true"></i>
-      </button>
+      {canManage && (
+        <button
+          className={iconButton}
+          type="button"
+          title="Edit"
+          aria-label={`Edit data ${row.data_id}`}
+          onClick={() => onSelectTarget(row)}
+        >
+          <i className="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+        </button>
+      )}
     </div>
   );
 }
@@ -199,17 +203,20 @@ const DefectRow = memo(function DefectRow({
   selectedIds,
   onSelectTarget,
   onToggleSelect,
+  canManage,
 }) {
   return (
     <tr className="border-t border-gray-100 text-center transition-colors hover:bg-gray-50">
       <td className="px-1 py-3">
-        <input
-          type="checkbox"
-          className={checkbox}
-          aria-label={`Pilih data ${row.data_id}`}
-          checked={selectedIds.includes(String(row.data_id))}
-          onChange={() => onToggleSelect(row.data_id)}
-        />
+        {canManage && (
+          <input
+            type="checkbox"
+            className={checkbox}
+            aria-label={`Pilih data ${row.data_id}`}
+            checked={selectedIds.includes(String(row.data_id))}
+            onChange={() => onToggleSelect(row.data_id)}
+          />
+        )}
       </td>
       <td className="px-1 py-3">{index + 1}</td>
       <td className="truncate px-1 py-3" title={row.ruas}>
@@ -273,17 +280,20 @@ const DefectCardItem = memo(function DefectCardItem({
   selectedIds,
   onSelectTarget,
   onToggleSelect,
+  canManage,
 }) {
   return (
     <li className="rounded-xl border border-gray-200 p-3">
       <div className="flex items-center gap-3">
-        <input
-          type="checkbox"
-          className={checkbox}
-          aria-label={`Pilih data ${row.data_id}`}
-          checked={selectedIds.includes(String(row.data_id))}
-          onChange={() => onToggleSelect(row.data_id)}
-        />
+        {canManage && (
+          <input
+            type="checkbox"
+            className={checkbox}
+            aria-label={`Pilih data ${row.data_id}`}
+            checked={selectedIds.includes(String(row.data_id))}
+            onChange={() => onToggleSelect(row.data_id)}
+          />
+        )}
         <span className="text-sm font-medium text-gray-500">#{index + 1}</span>
         <span className={`${statusBadgeClass(row.status)} ml-1`}>
           {row.status}
@@ -340,6 +350,8 @@ function FilterSelect({ id, label, value, onChange, children }) {
 
 function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
   const { rows: fetchedRows, loading, error, updateRow } = useDefects();
+  const currentUser = getStoredUser();
+  const canManage = canManageDefect(currentUser?.role);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
   const [filterRuas, setFilterRuas] = useState("");
@@ -1126,7 +1138,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
           <>
             {/* Bilah aksi: muncul hanya saat ada data terpilih, supaya baris
                 filter tidak berubah ukuran. */}
-            {selectedRows.length > 0 && (
+            {canManage && selectedRows.length > 0 && (
               <div className="mb-4 flex flex-col gap-2 rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm font-medium text-warning-700">
                   {selectedRows.length} data dipilih
@@ -1171,15 +1183,17 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
                 <thead>
                   <tr className="bg-gray-50 text-gray-500">
                     <th className="rounded-l-lg px-1 py-3">
-                      <input
-                        type="checkbox"
-                        className={checkbox}
-                        aria-label="Pilih semua data pada halaman ini"
-                        checked={allPageSelected}
-                        onChange={(event) =>
-                          handleSelectAllPage(event.target.checked)
-                        }
-                      />
+                      {canManage && (
+                        <input
+                          type="checkbox"
+                          className={checkbox}
+                          aria-label="Pilih semua data pada halaman ini"
+                          checked={allPageSelected}
+                          onChange={(event) =>
+                            handleSelectAllPage(event.target.checked)
+                          }
+                        />
+                      )}
                     </th>
                     {COLUMNS.map((col, columnIndex) => (
                       <th
@@ -1249,17 +1263,19 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
             <div className="lg:hidden">
               {paginatedRows.length > 0 ? (
                 <>
-                  <label className="mb-3 flex items-center gap-2 text-sm text-gray-600">
-                    <input
-                      type="checkbox"
-                      className={checkbox}
-                      checked={allPageSelected}
-                      onChange={(event) =>
-                        handleSelectAllPage(event.target.checked)
-                      }
-                    />
-                    Pilih semua data pada halaman ini
-                  </label>
+                  {canManage && (
+                    <label className="mb-3 flex items-center gap-2 text-sm text-gray-600">
+                      <input
+                        type="checkbox"
+                        className={checkbox}
+                        checked={allPageSelected}
+                        onChange={(event) =>
+                          handleSelectAllPage(event.target.checked)
+                        }
+                      />
+                      Pilih semua data pada halaman ini
+                    </label>
+                  )}
 
                   <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
                     {paginatedRows.map((row, index) => (
@@ -1365,7 +1381,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
         )}
       </div>
 
-      {showBulkEdit && (
+      {canManage && showBulkEdit && (
         <BulkEditModal
           rows={selectedRows}
           onClose={() => setShowBulkEdit(false)}
@@ -1410,17 +1426,19 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
           />
         </Suspense>
       )}
-      <EditDataModal
-        defect={selectedTarget}
-        onClose={() => setSelectedTarget(null)}
-        onDelete={handleDelete}
-        onSaved={(updated) => {
-          updateRow(updated.data_id, {
-            target: updated.target,
-            keterangan: updated.keterangan,
-          });
-        }}
-      />
+      {canManage && selectedTarget && (
+        <EditDataModal
+          defect={selectedTarget}
+          onClose={() => setSelectedTarget(null)}
+          onDelete={handleDelete}
+          onSaved={(updated) => {
+            updateRow(updated.data_id, {
+              target: updated.target,
+              keterangan: updated.keterangan,
+            });
+          }}
+        />
+      )}
     </section>
   );
 }
