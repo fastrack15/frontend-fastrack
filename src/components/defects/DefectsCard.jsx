@@ -913,6 +913,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
     onSelectTarget: setSelectedTarget,
     selectedIds,
     onToggleSelect: toggleSelect,
+    canManage,
   };
 
   const pageButton =
