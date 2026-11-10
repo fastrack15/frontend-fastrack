@@ -12,6 +12,8 @@ import {
   input,
   textarea as textareaClass,
 } from "../ui/styles";
+import { getStoredUser } from "../../services/authServices";
+import { canManageDefect } from "../../utils/permission";
 
 // Nilai "-" hanya penanda tampilan dari toDefectRow, bukan data asli.
 // Jangan sampai ikut tersimpan ke database.
@@ -68,6 +70,7 @@ export default function BulkEditModal({ rows = [], onClose, onSaved }) {
   const [values, setValues] = useState({ ...EMPTY_VALUES });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const canManage = canManageDefect(getStoredUser()?.role);
 
   const [progress, setProgress] = useState("");
 
@@ -123,6 +126,8 @@ export default function BulkEditModal({ rows = [], onClose, onSaved }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!canManage) return;
     setError("");
 
     if (!rows.length) {
@@ -360,6 +365,8 @@ export default function BulkEditModal({ rows = [], onClose, onSaved }) {
   };
 
   if (!rows.length) return null;
+
+  if (!canManage) return null;
 
   return (
     <Modal size="lg" labelledBy="bulkEditTitle">

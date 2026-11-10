@@ -1173,7 +1173,7 @@ function DefectsCard({ onFilteredRowsChange, onRuasKegiatanChange }) {
 
             {/* Tabel (layar >= lg) */}
             <div className="hidden overflow-x-auto lg:block">
-              <table className="w-full min-w-[900px] table-fixed text-xs text-gray-700">
+              <table className="w-full min-w-225 table-fixed text-xs text-gray-700">
                 <colgroup>
                   {/* Kolom checkbox Select All */}
                   <col style={{ width: CHECKBOX_COLUMN_WIDTH }} />

@@ -10,6 +10,8 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { saveDefectLocation } from "../../services/dashboardServices";
 import Swal from "sweetalert2";
 import { btnOutline, btnPrimary } from "../ui/styles";
+import { canManageDefect } from "../../utils/permission";
+import { getStoredUser } from "../../services/authServices";
 
 setWorkerUrl(workerUrl);
 
@@ -56,6 +58,7 @@ function hasValidCoordinates(latitude, longitude) {
 }
 
 export default function LocationPickerModal({ defect, onClose, onSaved }) {
+  const canManage = canManageDefect(getStoredUser()?.role);
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const savingRef = useRef(false);
@@ -126,7 +129,7 @@ export default function LocationPickerModal({ defect, onClose, onSaved }) {
   };
 
   const handleSave = async () => {
-    if (savingRef.current) return;
+    if (!canManage || savingRef.current) return;
 
     if (!defect?.data_id) {
       await fireAlert({
@@ -205,11 +208,11 @@ export default function LocationPickerModal({ defect, onClose, onSaved }) {
     onClose?.();
   };
 
-  if (!defect) return null;
+  if (!defect || !canManage) return null;
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/65 p-2 sm:p-4"
+      className="fixed inset-0 z-2000 flex items-center justify-center bg-black/65 p-2 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="locationPickerTitle"
@@ -245,7 +248,12 @@ export default function LocationPickerModal({ defect, onClose, onSaved }) {
         <div className="relative min-h-0 flex-1">
           <div
             ref={mapContainerRef}
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+            }}
           />
 
           {/* Pin tetap di tengah peta */}

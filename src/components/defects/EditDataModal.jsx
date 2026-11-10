@@ -9,6 +9,8 @@ import {
   textarea as textareaClass,
 } from "../ui/styles";
 import api from "../../api";
+import { canManageDefect } from "../../utils/permission";
+import { getStoredUser } from "../../services/authServices";
 
 // Tombol Hapus: merah, dengan garis tepi, agar tidak tertukar dengan Simpan.
 const deleteButtonClass =
@@ -30,6 +32,7 @@ function FormField({ id, label, span = "sm:col-span-3", children }) {
 }
 
 export default function EditDataModal({ defect, onClose, onSaved, onDelete }) {
+  const canManage = canManageDefect(getStoredUser()?.role);
   const [target, setTarget] = useState("");
   const [keterangan, setKeterangan] = useState("");
   const [lingkup, setLingkup] = useState("");
@@ -61,7 +64,7 @@ export default function EditDataModal({ defect, onClose, onSaved, onDelete }) {
     setError("");
   }, [defect]);
 
-  if (!defect) return null;
+  if (!defect || !canManage) return null;
 
   const handleSubmit = async (event) => {
     event.preventDefault();

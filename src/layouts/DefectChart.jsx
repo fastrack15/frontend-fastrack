@@ -14,6 +14,12 @@ const COLORS = [
   "#6b7894",
   "#17a2b8",
   "#e83e8c",
+  "#28a745",
+  "#fd7e14",
+  "#20c997",
+  "#6610f2",
+  "#dc3545",
+  "#6f42c1",
 ];
 
 const toTitleCase = (text) =>
@@ -52,7 +58,7 @@ function DefectChart({
   rows = [],
   field = "temuan",
   title = "Jenis Defect",
-  maxSlices = 6,
+  maxSlices = 13,
   loading = false,
 }) {
   const entries = useMemo(
@@ -117,9 +123,9 @@ function DefectChart({
             Belum ada data.
           </p>
         ) : (
-          <div className="grid w-full min-w-0 grid-cols-1 items-center gap-4 @sm:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+          <div className="grid w-full min-w-0 grid-cols-1 items-center gap-4 @sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             {/* Grafik pie */}
-            <div className="relative mx-auto h-52 w-full max-w-[300px] min-w-0 @sm:h-56">
+            <div className="relative mx-auto h-52 w-full max-w-75 min-w-0 @sm:h-56">
               <Pie data={data} options={options} plugins={[ChartDataLabels]} />
             </div>
 
@@ -129,15 +135,21 @@ function DefectChart({
                 {title}
               </h2>
 
-              <ul className="space-y-2.5">
+              <ul className="grid max-h-52 grid-cols-2 gap-x-4 gap-y-2.5 overflow-y-auto pr-1">
                 {entries.map(([label], index) => (
-                  <li key={label} className="flex items-start gap-2 text-sm">
+                  <li
+                    key={label}
+                    className="flex min-w-0 items-center gap-2 text-sm"
+                  >
                     <span
-                      className="mt-1 size-3 shrink-0 rounded-sm"
-                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                      className="size-3 shrink-0 rounded-sm"
+                      style={{
+                        backgroundColor: COLORS[index % COLORS.length],
+                      }}
                     />
+
                     <span
-                      className="min-w-0 wrap-anywhere text-gray-700"
+                      className="min-w-0 truncate text-gray-700"
                       title={label}
                     >
                       {label}
