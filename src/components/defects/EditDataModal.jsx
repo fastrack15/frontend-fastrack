@@ -204,7 +204,7 @@ export default function EditDataModal({ defect, onClose, onSaved, onDelete }) {
                 <option value="Close">Close</option>
               </select>
             </FormField>
-            <FormField id="bangunan" label="Bangunan">
+            <FormField id="bangunan" label="Objek">
               <input
                 id="bangunan"
                 type="text"
@@ -250,6 +250,7 @@ export default function EditDataModal({ defect, onClose, onSaved, onDelete }) {
                 onChange={(e) => setLajur(e.target.value)}
               >
                 <option value="">Pilih lajur</option>
+                <option value="-">-</option>
                 <option value="L1">L1</option>
                 <option value="L2">L2</option>
                 <option value="Bahu Dalam">Bahu Dalam</option>
